@@ -1,0 +1,6 @@
+overrides:
+  '@vitejs/plugin-react': ^4.3.4
+
+onlyBuiltDependencies:
+  - esbuild
+  - spawn-sync
