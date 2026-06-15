@@ -23,11 +23,12 @@ modified version without publishing your source, or otherwise use it in a way
 the AGPL would not permit — you must obtain a separate **commercial license**
 from the copyright holder.
 
-To inquire about a commercial license, email **jcohendumani7@gmail.com**.
+To inquire about a commercial license, use the public support contact listed
+with the project or browser-store listing.
 
 ## Copyright & contributions
 
-Copyright © 2026 Josh Cohen Dumani. All rights reserved.
+Copyright © 2026 Unhook for LinkedIn contributors. All rights reserved.
 
 > _Note: to assign ownership to a holding company, replace the copyright line
 > above (and in source headers, if added) with the entity's legal name once it

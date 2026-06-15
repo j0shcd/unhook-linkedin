@@ -24,10 +24,10 @@ browser's built-in extension storage. This data:
 
 ## Network requests
 
-The extension makes **no network requests**. It contains no analytics, no
-tracking, no telemetry, and no remote code. It does not read, log, or send your
-LinkedIn content anywhere. It works entirely by hiding page elements with CSS
-and, optionally, redirecting the LinkedIn feed page to another LinkedIn page
+The extension makes **no automatic network requests**. It contains no analytics,
+no tracking, no telemetry, and no remote code. It does not read, log, or send
+your LinkedIn content anywhere. It works entirely by hiding page elements with
+CSS and, optionally, redirecting the LinkedIn feed page to another LinkedIn page
 that you select.
 
 ## Permissions
@@ -40,9 +40,7 @@ that you select.
 ## Third parties
 
 There are no third-party services, SDKs, or trackers in this extension. The
-"Donate" and "Support" links in the extension simply open external pages
-(Ko-fi, your email client) in a new tab when you click them; no data is sent
-automatically.
+extension does not open or contact any third-party services automatically.
 
 ## Changes to this policy
 
@@ -51,4 +49,5 @@ location with a new "Last updated" date.
 
 ## Contact
 
-Questions about privacy? Email **jcohendumani7@gmail.com**.
+Use the support contact listed on the extension's browser-store page for
+privacy questions.

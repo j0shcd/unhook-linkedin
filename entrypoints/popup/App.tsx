@@ -3,12 +3,6 @@ import { Toggle } from '@/components/Toggle';
 import { useResolvedTheme, useSettings } from '@/lib/useSettings';
 import type { Theme } from '@/lib/settings';
 
-const SUPPORT_LINKS = [
-  { label: 'Donate', href: 'https://ko-fi.com/joshcd' },
-  { label: 'Request feature', href: 'mailto:jcohendumani7@gmail.com?subject=Unhook%20for%20LinkedIn%20feature%20request' },
-  { label: 'Support', href: 'mailto:jcohendumani7@gmail.com?subject=Unhook%20for%20LinkedIn%20support' },
-];
-
 export function App() {
   const { settings, update, loaded } = useSettings();
   const resolved = useResolvedTheme(settings.theme);
@@ -76,22 +70,6 @@ export function App() {
           Theme
         </div>
         <ThemePicker value={settings.theme} onChange={(t) => update({ theme: t })} />
-      </section>
-
-      <section className="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
-        <div className="grid grid-cols-3 gap-2">
-          {SUPPORT_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="rounded-md border border-slate-200 bg-white px-2 py-2 text-center text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              {l.label}
-            </a>
-          ))}
-        </div>
       </section>
     </div>
   );
