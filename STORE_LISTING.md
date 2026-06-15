@@ -11,7 +11,7 @@ Unhook for LinkedIn
 
 ## Short description (≤132 chars — used by both stores)
 
-Take back control of LinkedIn. Hide the feed, comments, and follow suggestions — distraction-free, private, no tracking.
+Take back control of LinkedIn. Hide the home feed — distraction-free, private, no tracking.
 
 ## Category
 
@@ -23,14 +23,12 @@ Productivity
 
 **Stop doomscrolling LinkedIn. Keep what's useful, hide the rest.**
 
-Unhook for LinkedIn puts you back in control of your LinkedIn experience. LinkedIn is great for messaging, jobs, and your network — but the endless feed, the comment pile-ons, and the "people you may know" nudges are engineered to keep you scrolling. Unhook quietly removes the parts that pull you in, so you can get in, do what you came to do, and get out.
+Unhook for LinkedIn puts you back in control of your LinkedIn experience. LinkedIn is great for messaging, jobs, and your network — but the endless home feed is engineered to keep you scrolling. Unhook quietly removes it, so you can get in, do what you came to do, and get out.
 
 **What you can do:**
 
 • **Block the home feed** — Replace the infinite scroll at linkedin.com/feed with a calm, empty page.
 • **Redirect the feed** — Optionally send yourself straight to your Messages or the Jobs page instead of the feed, so LinkedIn opens on something useful.
-• **Hide comments** — Remove comment sections from posts to cut the noise and the outrage bait.
-• **Hide follow suggestions** — Get rid of "People you may know," "Add to your feed," and follow-recommendation cards.
 • **Pause anytime** — One click pauses everything when you actually want the full LinkedIn. Turn it back on just as fast.
 • **Light, dark, or system theme** — Matches how you like to browse.
 
@@ -63,16 +61,16 @@ Answer these as follows in the Developer Dashboard:
 
 - **`storage`:** Saves the user's hide/redirect/theme preferences locally on
   their device. No data is transmitted.
-- **Host permission `*://*.linkedin.com/*`:** Required to hide elements and apply
-  redirect preferences on LinkedIn pages. The extension functions only on
-  LinkedIn.
+- **Host permission `https://www.linkedin.com/*`:** Required to hide elements
+  and apply redirect preferences on LinkedIn pages. The extension functions only
+  on LinkedIn.
 
 ## Firefox AMO notes
 
 - AMO reviews source. The submitted JS is bundled by Vite/WXT. In the
   "source code" step, point reviewers to the public Git repository and the build
-  command: `pnpm install && pnpm zip:firefox` (Node 20+). Output is in
-  `.output/`.
+  command: `pnpm install && pnpm zip:firefox` (Node 20+, Firefox 121+). Output
+  is in `.output/`.
 - No minification obfuscation, no remote code — review should be quick.
 
 ---
@@ -81,5 +79,5 @@ Answer these as follows in the Developer Dashboard:
 
 - [ ] At least 1 screenshot (Chrome: 1280×800 or 640×400; recommend 3–5)
 - [ ] Chrome small promo tile 440×280 (optional but recommended)
-- [ ] A real icon (current icons are flat solid squares — functional but plain)
+- [x] A real icon
 - [ ] Privacy policy hosted at a public URL

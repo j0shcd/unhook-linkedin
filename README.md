@@ -1,18 +1,16 @@
 # Unhook for LinkedIn
 
-Take back control of LinkedIn. Hide the feed, comments, and follow suggestions —
+Take back control of LinkedIn. Hide the home feed —
 distraction-free, private, and with no tracking.
 
 A lightweight browser extension that hides the parts of LinkedIn engineered to
 keep you scrolling, while keeping what's useful (messages, jobs, your network).
-It works entirely on-device: no accounts, no analytics, no network requests.
+It works entirely on-device: no accounts, no analytics, no automatic network requests.
 
 ## Features
 
 - **Block the home feed** at `linkedin.com/feed`, with an optional redirect to
   your Messages or the Jobs page instead.
-- **Hide comments** under posts.
-- **Hide follow suggestions** ("People you may know," "Add to your feed," etc.).
 - **Pause anytime** with one click.
 - **Light / dark / system** theme.
 
@@ -30,12 +28,14 @@ without reloading the page.
 ## Development
 
 Requires Node 20+ and pnpm.
+Firefox builds target Firefox 121+.
 
 ```bash
 pnpm install          # install dependencies
 pnpm dev              # run in Chrome (dev)
 pnpm dev:firefox      # run in Firefox (dev)
 pnpm compile          # type-check (tsc --noEmit)
+pnpm check            # type-check and production-build both browsers
 pnpm build            # production build (Chrome)
 pnpm build:firefox    # production build (Firefox)
 pnpm zip              # packaged .zip for the Chrome Web Store

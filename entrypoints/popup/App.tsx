@@ -69,18 +69,6 @@ export function App() {
             }
           />
         </div>
-        <Toggle
-          label="Hide comments"
-          checked={settings.hideComments}
-          disabled={off}
-          onChange={(v) => update({ hideComments: v })}
-        />
-        <Toggle
-          label="Hide follow suggestions"
-          checked={settings.hideFollowSuggestions}
-          disabled={off}
-          onChange={(v) => update({ hideFollowSuggestions: v })}
-        />
       </section>
 
       <section className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
