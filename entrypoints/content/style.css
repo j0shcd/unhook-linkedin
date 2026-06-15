@@ -2,40 +2,20 @@
  * Unhook for LinkedIn — content CSS.
  * Rules are gated by data attributes on <html> so the popup can toggle them
  * without a full page reload.
+ *
+ * On LinkedIn home we hide post cards and small feed chrome, leaving the rest
+ * of the page intact and navigable.
  */
 
-/* Hide the main feed column on linkedin.com/feed/ */
-html[data-unhook-block-feed='1'] main[role='main'] > div:has(.scaffold-finite-scroll),
-html[data-unhook-block-feed='1'] main[role='main'] .scaffold-finite-scroll,
-html[data-unhook-block-feed='1'] main[role='main'] div.feed-shared-news-module,
-html[data-unhook-block-feed='1'] main[role='main'] div.scaffold-layout__main {
+html[data-unhook-block-feed='1'][data-unhook-on-feed='1'] [data-unhook-feed-target='1'] {
   display: none !important;
 }
 
-html[data-unhook-block-feed='1'][data-unhook-on-feed='1'] main[role='main']::before {
-  content: 'Feed hidden by Unhook for LinkedIn.';
-  display: block;
-  padding: 48px 24px;
-  text-align: center;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Hide comments under posts */
-html[data-unhook-hide-comments='1'] .comments-comments-list,
-html[data-unhook-hide-comments='1'] .feed-shared-update-v2__comments-container,
-html[data-unhook-hide-comments='1'] .social-details-social-activity,
-html[data-unhook-hide-comments='1'] button[aria-label*='comment' i].comments-comment-box__trigger {
-  display: none !important;
-}
-
-/* Hide follow / "people you may know" / "add to your feed" suggestions */
-html[data-unhook-hide-follow-suggestions='1'] aside.scaffold-layout__aside,
-html[data-unhook-hide-follow-suggestions='1'] .feed-follows-module,
-html[data-unhook-hide-follow-suggestions='1'] .discover-entity-type-card,
-html[data-unhook-hide-follow-suggestions='1'] section[data-id='cohorts-module'],
-html[data-unhook-hide-follow-suggestions='1'] div[data-test-id='pymk-list'],
-html[data-unhook-hide-follow-suggestions='1'] .pymk-card,
-html[data-unhook-hide-follow-suggestions='1'] .follow-recommendation-card {
+html[data-unhook-block-feed='1'][data-unhook-on-feed='1']
+  [data-testid='mainFeed']
+  > :not(:has([aria-label='Start a post' i], [componentkey='shareboxProfilePictureComponentRef'])),
+html[data-unhook-block-feed='1'][data-unhook-on-feed='1']
+  [componentkey='container-update-list_mainFeed-lazy-container']
+  > :not(:has([aria-label='Start a post' i], [componentkey='shareboxProfilePictureComponentRef'])) {
   display: none !important;
 }
