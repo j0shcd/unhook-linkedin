@@ -5,16 +5,16 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: 'Unhook for LinkedIn',
-    description: 'Take back control of LinkedIn. Hide the feed, comments, and follow suggestions.',
+    description: 'Take back control of LinkedIn. Hide or redirect the home feed with no tracking.',
     permissions: ['storage'],
-    host_permissions: ['*://*.linkedin.com/*'],
+    host_permissions: ['https://www.linkedin.com/*'],
     action: {
       default_title: 'Unhook for LinkedIn',
     },
     browser_specific_settings: {
       gecko: {
-        id: 'unhook-linkedin@joshcohendumani.dev',
-        strict_min_version: '109.0',
+        id: '{3f0c9b31-5e8b-4a96-9d21-2c7d42aa44d8}',
+        strict_min_version: '121.0',
       },
     },
   },
