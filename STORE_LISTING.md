@@ -53,7 +53,7 @@ Answer these as follows in the Developer Dashboard:
 
 - **Does this item collect or use data?** No.
 - **Personally identifiable / health / financial / authentication / personal communications / location / web history / user activity / website content:** None collected.
-- **Privacy policy URL:** _(host PRIVACY.md publicly and paste the URL here)_
+- **Privacy policy URL:** https://j0shcd.github.io/unhook-linkedin/privacy.html
 - **Certify:** the three compliance checkboxes (does not sell data, does not use
   data for unrelated purposes, does not use data for creditworthiness/lending).
 
@@ -80,4 +80,4 @@ Answer these as follows in the Developer Dashboard:
 - [ ] At least 1 screenshot (Chrome: 1280×800 or 640×400; recommend 3–5)
 - [ ] Chrome small promo tile 440×280 (optional but recommended)
 - [x] A real icon
-- [ ] Privacy policy hosted at a public URL
+- [x] Privacy policy hosted at a public URL

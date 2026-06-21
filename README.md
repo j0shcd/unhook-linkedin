@@ -17,7 +17,8 @@ It works entirely on-device: no accounts, no analytics, no automatic network req
 ## Privacy
 
 The extension collects nothing, sends nothing, and shares nothing. Your settings
-are stored locally on your device. See [`PRIVACY.md`](./PRIVACY.md).
+are stored locally on your device. See [`PRIVACY.md`](./PRIVACY.md) or the
+[public policy page](https://j0shcd.github.io/unhook-linkedin/privacy.html).
 
 ## Tech
 
