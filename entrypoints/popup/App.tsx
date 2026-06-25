@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Logo } from '@/components/Logo';
 import { Toggle } from '@/components/Toggle';
 import { useResolvedTheme, useSettings } from '@/lib/useSettings';
 import type { Theme } from '@/lib/settings';
@@ -12,21 +13,19 @@ export function App() {
   }, [resolved]);
 
   if (!loaded) {
-    return <div className="p-6 text-sm text-slate-500">Loading…</div>;
+    return <div className="p-6 text-sm text-muted">Loading…</div>;
   }
 
   const off = !settings.enabled;
 
   return (
     <div className="flex flex-col">
-      <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+      <header className="flex items-center justify-between border-b border-ink/10 px-4 py-3 dark:border-paper/15">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-sky-600 text-white grid place-items-center text-sm font-bold">
-            U
-          </div>
+          <Logo className="h-7 w-7 text-ink dark:text-paper" />
           <div>
             <div className="text-sm font-semibold leading-tight">Unhook for LinkedIn</div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-[11px] text-muted dark:text-paper/60">
               {settings.enabled ? 'On' : 'Paused'}
             </div>
           </div>
@@ -37,7 +36,7 @@ export function App() {
         />
       </header>
 
-      <section className="divide-y divide-slate-100 px-4 dark:divide-slate-800">
+      <section className="divide-y divide-ink/10 px-4 dark:divide-paper/10">
         <Toggle
           label="Block home feed"
           description="Hide the LinkedIn feed at linkedin.com/feed/"
@@ -65,8 +64,8 @@ export function App() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-        <div className="mb-2 text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      <section className="border-t border-ink/10 px-4 py-3 dark:border-paper/15">
+        <div className="mb-2 text-[11px] uppercase tracking-wide text-muted dark:text-paper/60">
           Theme
         </div>
         <ThemePicker value={settings.theme} onChange={(t) => update({ theme: t })} />
@@ -84,8 +83,8 @@ function PowerButton({ enabled, onToggle }: { enabled: boolean; onToggle: () => 
       title={enabled ? 'Pause Unhook' : 'Resume Unhook'}
       className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
         enabled
-          ? 'bg-sky-600 text-white hover:bg-sky-700'
-          : 'bg-slate-200 text-slate-500 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300'
+          ? 'bg-ink text-paper hover:bg-ink/90 dark:bg-paper dark:text-ink dark:hover:bg-paper/90'
+          : 'bg-ink/10 text-muted hover:bg-ink/20 dark:bg-paper/15 dark:text-paper/60 dark:hover:bg-paper/25'
       }`}
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -103,7 +102,7 @@ function ThemePicker({ value, onChange }: { value: Theme; onChange: (t: Theme) =
     { v: 'dark', label: 'Dark' },
   ];
   return (
-    <div className="grid grid-cols-3 gap-1 rounded-md bg-slate-100 p-1 dark:bg-slate-800">
+    <div className="grid grid-cols-3 gap-1 rounded-md bg-ink/5 p-1 dark:bg-paper/10">
       {opts.map((o) => (
         <button
           key={o.v}
@@ -111,8 +110,8 @@ function ThemePicker({ value, onChange }: { value: Theme; onChange: (t: Theme) =
           onClick={() => onChange(o.v)}
           className={`rounded px-2 py-1 text-xs font-medium transition ${
             value === o.v
-              ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'
+              ? 'bg-paper text-ink shadow-sm dark:bg-paper/20 dark:text-paper'
+              : 'text-muted hover:text-ink dark:text-paper/60 dark:hover:text-paper'
           }`}
         >
           {o.label}

@@ -21,12 +21,12 @@ export function Toggle({ checked, onChange, label, description, disabled }: Togg
         onClick={() => !disabled && onChange(!checked)}
         className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
           checked
-            ? 'bg-sky-600 dark:bg-sky-500'
-            : 'bg-slate-300 dark:bg-slate-700'
+            ? 'bg-ink dark:bg-paper'
+            : 'bg-ink/20 dark:bg-paper/25'
         }`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-paper shadow transition-transform dark:bg-ink ${
             checked ? 'translate-x-4' : 'translate-x-0.5'
           }`}
         />
@@ -34,7 +34,7 @@ export function Toggle({ checked, onChange, label, description, disabled }: Togg
       <div className="flex-1 select-none">
         <div className="text-sm font-medium leading-tight">{label}</div>
         {description ? (
-          <div className="text-xs text-slate-500 dark:text-slate-400">{description}</div>
+          <div className="text-xs text-muted dark:text-paper/60">{description}</div>
         ) : null}
       </div>
     </label>
