@@ -13,7 +13,7 @@ distribute or make available to others — including over a network — is also
 released in full under the AGPL-3.0, with complete corresponding source code.
 
 If those terms work for you, you don't need to do anything else. Use it, fork
-it, contribute back — welcome.
+it, contribute back. Welcome.
 
 ## 2. Commercial license (alternative)
 

@@ -13,8 +13,8 @@ personal data or browsing activity.
 
 ## What data is stored, and where
 
-Your preferences — which sections of LinkedIn you choose to hide, your redirect
-choices, and your theme — are stored **locally on your own device** using the
+Your preferences (which sections of LinkedIn you choose to hide, your redirect
+choices, and your theme) are stored **locally on your own device** using the
 browser's built-in extension storage. This data:
 
 - never leaves your device,
@@ -32,8 +32,8 @@ that you select.
 
 ## Permissions
 
-- **`storage`** — to save your preferences locally on your device.
-- **Host access to `linkedin.com`** — so the extension can hide elements and
+- **`storage`:** to save your preferences locally on your device.
+- **Host access to `linkedin.com`:** so the extension can hide elements and
   apply your redirect preferences on LinkedIn pages. The extension runs only on
   LinkedIn and on no other websites.
 
