@@ -9,9 +9,9 @@ Copy/paste from here.
 
 Unhook for LinkedIn
 
-## Short description (≤132 chars — used by both stores)
+## Short description (≤132 chars)
 
-Take back control of LinkedIn. Hide the home feed — distraction-free, private, no tracking.
+A browser extension that hides your LinkedIn feed. Get your work done without distraction. Fully private, no tracking.
 
 ## Category
 
@@ -21,29 +21,19 @@ Productivity
 
 ## Long description (store listing body)
 
-**Stop doomscrolling LinkedIn. Keep what's useful, hide the rest.**
+Hide your LinkedIn home feed so you can get in, do what you came to do, and get out. No tracking, no sign-up.
 
-Unhook for LinkedIn puts you back in control of your LinkedIn experience. LinkedIn is great for messaging, jobs, and your network — but the endless home feed is engineered to keep you scrolling. Unhook quietly removes it, so you can get in, do what you came to do, and get out.
+The LinkedIn home feed is built to keep you scrolling. Unhook removes it while keeping everything else — messaging, jobs, your network — exactly as it is. Toggle it through the popup to set up your own distraction-free LinkedIn.
 
-**What you can do:**
+OPTIONS:
+- Hide the home feed
+- Redirect the feed to your Messages or the Jobs page instead
+- Pause anytime, then turn it back on in one click
+- Light or dark theme
 
-• **Block the home feed** — Replace the infinite scroll at linkedin.com/feed with a calm, empty page.
-• **Redirect the feed** — Optionally send yourself straight to your Messages or the Jobs page instead of the feed, so LinkedIn opens on something useful.
-• **Pause anytime** — One click pauses everything when you actually want the full LinkedIn. Turn it back on just as fast.
-• **Light, dark, or system theme** — Matches how you like to browse.
+Unhook collects no data, has no analytics or trackers, and needs no account. Your settings stay on your device and never leave it. It runs only on LinkedIn, hides elements with CSS so nothing slows down, and never deletes anything — every change is instant and reversible.
 
-**Built to respect you:**
-
-• **No tracking. No analytics. No data collection.** Your settings stay on your device and never leave it.
-• **No account or sign-up.** Install it and it just works.
-• **Runs only on LinkedIn.** It has no access to any other site.
-• **Lightweight and fast.** It hides elements with CSS — it doesn't slow LinkedIn down.
-
-Every change is instant and reversible. Nothing is ever deleted from LinkedIn — Unhook simply hides it from view while it's turned on.
-
-Take back your attention. Use LinkedIn on your terms.
-
-_Unhook for LinkedIn is an independent project and is not affiliated with, endorsed by, or sponsored by LinkedIn Corporation._
+Unhook for LinkedIn is an independent project and is not affiliated with, endorsed by, or sponsored by LinkedIn Corporation.
 
 ---
 

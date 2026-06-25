@@ -1,10 +1,8 @@
 # Unhook for LinkedIn
 
-Take back control of LinkedIn. Hide the home feed —
-distraction-free, private, and with no tracking.
+Get your work done without distraction. Fully private, no tracking.
 
-A lightweight browser extension that hides the parts of LinkedIn engineered to
-keep you scrolling, while keeping what's useful (messages, jobs, your network).
+A lightweight browser extension that hides the LinkedIn home feed, while keeping what's useful (messages, jobs, your network).
 It works entirely on-device: no accounts, no analytics, no automatic network requests.
 
 ## Features
