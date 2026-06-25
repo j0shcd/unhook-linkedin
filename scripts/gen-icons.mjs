@@ -1,26 +1,88 @@
-import { deflateSync } from 'node:zlib';
-import { writeFileSync, mkdirSync } from 'node:fs';
+// Regenerates the icon suite and the vector logo from the source artwork.
+//
+// Pipeline: decode the source PNG -> split into per-colour masks (the lavender
+// tile cluster and the grey accent tile) -> trace each mask to a vector path
+// with potrace -> compose a theme-able logo.svg -> rasterise the toolbar icon
+// suite (16-128) with resvg.
+//
+// Run with: node scripts/gen-icons.mjs
+
+import { inflateSync, deflateSync } from 'node:zlib';
+import { writeFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+import potrace from 'potrace';
+import { Resvg } from '@resvg/resvg-js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'public', 'icon');
-mkdirSync(outDir, { recursive: true });
+const source = join(root, 'marketing', 'branding', 'dark.png');
+const iconDir = join(root, 'public', 'icon');
+const brandDir = join(root, 'marketing', 'branding');
+const componentsDir = join(root, 'components');
+mkdirSync(iconDir, { recursive: true });
 
-const TOP = [14, 165, 233, 255]; // sky-500
-const BOTTOM = [3, 105, 161, 255]; // sky-800
-const WHITE = [255, 255, 255, 255];
-const CUT = [2, 132, 199, 255]; // sky-600
+// Brand palette.
+const BLACK = '#000000';
+const LAVENDER = '#f0f1ff';
+const ACCENT = '#545454';
 
-const table = new Uint32Array(256);
+// --- PNG decoding (minimal, RGBA/RGB, supports all filter types) ------------
+function decodePng(path) {
+  const buf = readFileSync(path);
+  let p = 8;
+  const idat = [];
+  let w, h, colorType;
+  while (p < buf.length) {
+    const len = buf.readUInt32BE(p);
+    const type = buf.toString('ascii', p + 4, p + 8);
+    const data = buf.subarray(p + 8, p + 8 + len);
+    if (type === 'IHDR') {
+      w = data.readUInt32BE(0);
+      h = data.readUInt32BE(4);
+      colorType = data[9];
+    }
+    if (type === 'IDAT') idat.push(data);
+    p += 12 + len;
+  }
+  const ch = colorType === 6 ? 4 : 3;
+  const raw = inflateSync(Buffer.concat(idat));
+  const rowBytes = 1 + w * ch;
+  const out = Buffer.alloc(w * h * ch);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * rowBytes];
+    for (let x = 0; x < w * ch; x++) {
+      const cur = raw[y * rowBytes + 1 + x];
+      const a = x >= ch ? out[y * w * ch + x - ch] : 0;
+      const b = y > 0 ? out[(y - 1) * w * ch + x] : 0;
+      const c = x >= ch && y > 0 ? out[(y - 1) * w * ch + x - ch] : 0;
+      let v;
+      if (f === 0) v = cur;
+      else if (f === 1) v = cur + a;
+      else if (f === 2) v = cur + b;
+      else if (f === 3) v = cur + ((a + b) >> 1);
+      else {
+        const pa = Math.abs(b - c);
+        const pb = Math.abs(a - c);
+        const pc = Math.abs(a + b - 2 * c);
+        v = cur + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c);
+      }
+      out[y * w * ch + x] = v & 0xff;
+    }
+  }
+  return { w, h, ch, out };
+}
+
+// --- Minimal grayscale PNG encoder (for the masks fed to potrace) -----------
+const crcTable = new Uint32Array(256);
 for (let i = 0; i < 256; i++) {
   let c = i;
   for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  table[i] = c >>> 0;
+  crcTable[i] = c >>> 0;
 }
 function crc32(buf) {
   let c = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) c = table[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
   return (c ^ 0xffffffff) >>> 0;
 }
 function chunk(type, data) {
@@ -31,147 +93,184 @@ function chunk(type, data) {
   crc.writeUInt32BE(crc32(Buffer.concat([typeBuf, data])), 0);
   return Buffer.concat([len, typeBuf, data, crc]);
 }
-function makePng(size) {
+function encodeGrayPng(w, h, gray) {
   const sig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 6;
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-
-  const scale = 4;
-  const rowBytes = 1 + size * 4;
-  const raw = Buffer.alloc(rowBytes * size);
-
-  for (let y = 0; y < size; y++) {
-    const row = y * rowBytes;
-    raw[row] = 0;
-    for (let x = 0; x < size; x++) {
-      let r = 0;
-      let g = 0;
-      let b = 0;
-      let a = 0;
-
-      for (let sy = 0; sy < scale; sy++) {
-        for (let sx = 0; sx < scale; sx++) {
-          const px = (x + (sx + 0.5) / scale) / size;
-          const py = (y + (sy + 0.5) / scale) / size;
-          const color = sampleIcon(px, py);
-          r += color[0];
-          g += color[1];
-          b += color[2];
-          a += color[3];
-        }
-      }
-
-      const samples = scale * scale;
-      const offset = row + 1 + x * 4;
-      raw[offset] = Math.round(r / samples);
-      raw[offset + 1] = Math.round(g / samples);
-      raw[offset + 2] = Math.round(b / samples);
-      raw[offset + 3] = Math.round(a / samples);
-    }
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 0; // grayscale
+  const rowBytes = 1 + w;
+  const rawBuf = Buffer.alloc(rowBytes * h);
+  for (let y = 0; y < h; y++) {
+    rawBuf[y * rowBytes] = 0;
+    gray.copy(rawBuf, y * rowBytes + 1, y * w, y * w + w);
   }
-
-  const idat = deflateSync(raw);
+  const idat = deflateSync(rawBuf);
   return Buffer.concat([sig, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', Buffer.alloc(0))]);
 }
 
-function sampleIcon(x, y) {
-  if (!insideRoundedRect(x, y, 0.08, 0.08, 0.84, 0.84, 0.18)) {
-    return [0, 0, 0, 0];
+// Keep only the largest 4-connected component of a boolean shape grid. Used to
+// isolate the single solid accent tile from the thin anti-aliased slivers that
+// share its grey luma band along every other tile's edge.
+function keepLargest(shape, w, h) {
+  const label = new Int32Array(w * h);
+  const stack = [];
+  let best = [];
+  let bestSize = 0;
+  for (let s = 0; s < w * h; s++) {
+    if (!shape[s] || label[s]) continue;
+    const cells = [];
+    stack.push(s);
+    label[s] = 1;
+    while (stack.length) {
+      const p = stack.pop();
+      cells.push(p);
+      const x = p % w, y = (p / w) | 0;
+      if (x > 0 && shape[p - 1] && !label[p - 1]) (label[p - 1] = 1), stack.push(p - 1);
+      if (x < w - 1 && shape[p + 1] && !label[p + 1]) (label[p + 1] = 1), stack.push(p + 1);
+      if (y > 0 && shape[p - w] && !label[p - w]) (label[p - w] = 1), stack.push(p - w);
+      if (y < h - 1 && shape[p + w] && !label[p + w]) (label[p + w] = 1), stack.push(p + w);
+    }
+    if (cells.length > bestSize) (bestSize = cells.length), (best = cells);
   }
-
-  const t = Math.max(0, Math.min(1, (y - 0.08) / 0.84));
-  let color = mix(TOP, BOTTOM, t);
-  color = blend(color, [255, 255, 255, softCircle(x, y, 0.35, 0.22, 0.28) * 28]);
-
-  const u = uStrokeAlpha(x, y);
-  if (u > 0) {
-    color = blend(color, [...WHITE.slice(0, 3), u * 255]);
-  }
-
-  const cut = capsuleAlpha(x, y, 0.58, 0.26, 0.76, 0.44, 0.07);
-  if (cut > 0) {
-    color = blend(color, [...CUT.slice(0, 3), cut * 255]);
-  }
-
-  return color;
+  const kept = new Uint8Array(w * h);
+  for (const p of best) kept[p] = 1;
+  return kept;
 }
 
-function uStrokeAlpha(x, y) {
-  const width = 0.145;
-  const d = Math.min(
-    capsuleDistance(x, y, 0.34, 0.28, 0.34, 0.58),
-    capsuleDistance(x, y, 0.66, 0.28, 0.66, 0.58),
-    arcDistance(x, y, 0.5, 0.58, 0.16),
+// --- Build a black-on-white mask for pixels matching a predicate ------------
+function buildMask({ w, h, ch, out }, predicate, { largestOnly = false } = {}) {
+  let shape = new Uint8Array(w * h);
+  for (let s = 0; s < w * h; s++) {
+    const i = s * ch;
+    if (predicate(out[i], out[i + 1], out[i + 2])) shape[s] = 1;
+  }
+  if (largestOnly) shape = keepLargest(shape, w, h);
+
+  const gray = Buffer.alloc(w * h, 255); // white background
+  let count = 0;
+  let minx = w, miny = h, maxx = 0, maxy = 0;
+  for (let s = 0; s < w * h; s++) {
+    if (!shape[s]) continue;
+    gray[s] = 0; // black = shape
+    count++;
+    const x = s % w, y = (s / w) | 0;
+    if (x < minx) minx = x;
+    if (x > maxx) maxx = x;
+    if (y < miny) miny = y;
+    if (y > maxy) maxy = y;
+  }
+  return { png: encodeGrayPng(w, h, gray), count, bbox: { minx, miny, maxx, maxy } };
+}
+
+const luma = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+// Lavender tiles: bright. Accent tile: a tight band around grey ~84, which
+// excludes the ~128 anti-aliased edges between the lavender tiles and the
+// black background.
+const isMain = (r, g, b) => luma(r, g, b) >= 150;
+const isAccent = (r, g, b) => {
+  const l = luma(r, g, b);
+  return l >= 55 && l <= 115;
+};
+
+// --- Trace a mask PNG to a single path's `d` attribute ----------------------
+function tracePath(pngBuffer) {
+  const tmp = join(tmpdir(), `unhook-mask-${pngBuffer.length}.png`);
+  writeFileSync(tmp, pngBuffer);
+  return new Promise((resolve, reject) => {
+    const tracer = new potrace.Potrace({
+      threshold: 128,
+      turdSize: 8, // drop specks from anti-aliasing
+      optTolerance: 0.4,
+      turnPolicy: potrace.Potrace.TURNPOLICY_MINORITY,
+    });
+    tracer.loadImage(tmp, (err) => {
+      rmSync(tmp, { force: true });
+      if (err) return reject(err);
+      const svg = tracer.getSVG();
+      const d = [...svg.matchAll(/ d="([^"]+)"/g)].map((m) => m[1]).join(' ');
+      resolve(d);
+    });
+  });
+}
+
+// --- Compose SVGs -----------------------------------------------------------
+// Fit the artwork's content bbox into a padded 100x100 logical canvas.
+function fitTransform(bbox, { canvas = 100, pad = 14 } = {}) {
+  const cw = bbox.maxx - bbox.minx + 1;
+  const choriz = bbox.maxy - bbox.miny + 1;
+  const scale = (canvas - 2 * pad) / Math.max(cw, choriz);
+  const tx = pad + (canvas - 2 * pad - cw * scale) / 2 - bbox.minx * scale;
+  const ty = pad + (canvas - 2 * pad - choriz * scale) / 2 - bbox.miny * scale;
+  return { scale, tx, ty };
+}
+
+function logoSvg({ mainPath, accentPath, transform, background, mainColor }) {
+  const { scale, tx, ty } = transform;
+  const bg = background
+    ? `<rect width="100" height="100" rx="22" fill="${background}"/>`
+    : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+${bg}  <g transform="translate(${tx.toFixed(3)} ${ty.toFixed(3)}) scale(${scale.toFixed(5)})">
+    <path d="${mainPath}" fill="${mainColor}"/>
+    <path d="${accentPath}" fill="${ACCENT}"/>
+  </g>
+</svg>`;
+}
+
+// --- Main -------------------------------------------------------------------
+const img = decodePng(source);
+const main = buildMask(img, isMain);
+const accent = buildMask(img, isAccent, { largestOnly: true });
+console.log(`main tiles: ${main.count}px  accent: ${accent.count}px`);
+
+const [mainPath, accentPath] = await Promise.all([
+  tracePath(main.png),
+  tracePath(accent.png),
+]);
+
+// Combined content bbox so both layers share one transform.
+const bbox = {
+  minx: Math.min(main.bbox.minx, accent.bbox.minx),
+  miny: Math.min(main.bbox.miny, accent.bbox.miny),
+  maxx: Math.max(main.bbox.maxx, accent.bbox.maxx),
+  maxy: Math.max(main.bbox.maxy, accent.bbox.maxy),
+};
+const transform = fitTransform(bbox);
+
+// Theme-able vector logo: tiles inherit text colour, accent stays grey.
+const themeSvg = logoSvg({ mainPath, accentPath, transform, background: null, mainColor: 'currentColor' });
+writeFileSync(join(brandDir, 'logo.svg'), themeSvg + '\n');
+console.log('wrote marketing/branding/logo.svg');
+
+// React component using the raw artwork coordinates so consumers control
+// padding via the container. Tiles inherit `currentColor`; accent stays grey.
+const vb = `${bbox.minx} ${bbox.miny} ${bbox.maxx - bbox.minx + 1} ${bbox.maxy - bbox.miny + 1}`;
+const component = `// AUTO-GENERATED by scripts/gen-icons.mjs — do not edit by hand.
+// The brand mark: tiles inherit \`currentColor\`, the accent tile stays grey.
+
+export function Logo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="${vb}"
+      className={className}
+      role="img"
+      aria-label="Unhook for LinkedIn"
+    >
+      <path d="${mainPath}" fill="currentColor" />
+      <path d="${accentPath}" fill="${ACCENT}" />
+    </svg>
   );
-  return smoothstep(width / 2 + 0.018, width / 2 - 0.018, d);
 }
+`;
+writeFileSync(join(componentsDir, 'Logo.tsx'), component);
+console.log('wrote components/Logo.tsx');
 
-function arcDistance(x, y, cx, cy, radius) {
-  const dx = x - cx;
-  const dy = y - cy;
-  const angle = Math.atan2(dy, dx);
-  if (angle >= 0 && angle <= Math.PI) {
-    return Math.abs(Math.hypot(dx, dy) - radius);
-  }
-  return Math.min(
-    Math.hypot(x - (cx - radius), y - cy),
-    Math.hypot(x - (cx + radius), y - cy),
-  );
-}
-
-function capsuleDistance(x, y, x1, y1, x2, y2) {
-  const ax = x - x1;
-  const ay = y - y1;
-  const bx = x2 - x1;
-  const by = y2 - y1;
-  const denom = bx * bx + by * by;
-  const t = denom === 0 ? 0 : Math.max(0, Math.min(1, (ax * bx + ay * by) / denom));
-  return Math.hypot(x - (x1 + bx * t), y - (y1 + by * t));
-}
-
-function capsuleAlpha(x, y, x1, y1, x2, y2, width) {
-  return smoothstep(width / 2 + 0.018, width / 2 - 0.018, capsuleDistance(x, y, x1, y1, x2, y2));
-}
-
-function insideRoundedRect(x, y, rx, ry, w, h, radius) {
-  const cx = Math.max(rx + radius, Math.min(x, rx + w - radius));
-  const cy = Math.max(ry + radius, Math.min(y, ry + h - radius));
-  return Math.hypot(x - cx, y - cy) <= radius;
-}
-
-function softCircle(x, y, cx, cy, radius) {
-  return smoothstep(radius, 0, Math.hypot(x - cx, y - cy));
-}
-
-function smoothstep(edge0, edge1, x) {
-  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
-  return t * t * (3 - 2 * t);
-}
-
-function mix(a, b, t) {
-  return a.map((v, i) => Math.round(v + (b[i] - v) * t));
-}
-
-function blend(bottom, top) {
-  const topAlpha = top[3] / 255;
-  const bottomAlpha = bottom[3] / 255;
-  const outAlpha = topAlpha + bottomAlpha * (1 - topAlpha);
-  if (outAlpha === 0) return [0, 0, 0, 0];
-  return [
-    Math.round((top[0] * topAlpha + bottom[0] * bottomAlpha * (1 - topAlpha)) / outAlpha),
-    Math.round((top[1] * topAlpha + bottom[1] * bottomAlpha * (1 - topAlpha)) / outAlpha),
-    Math.round((top[2] * topAlpha + bottom[2] * bottomAlpha * (1 - topAlpha)) / outAlpha),
-    Math.round(outAlpha * 255),
-  ];
-}
-
+// Toolbar icon: self-contained black squircle with lavender tiles + grey accent.
+const iconSvg = logoSvg({ mainPath, accentPath, transform, background: BLACK, mainColor: LAVENDER });
 for (const size of [16, 32, 48, 96, 128]) {
-  writeFileSync(join(outDir, `${size}.png`), makePng(size));
-  console.log(`wrote ${size}.png`);
+  const resvg = new Resvg(iconSvg, { fitTo: { mode: 'width', value: size } });
+  writeFileSync(join(iconDir, `${size}.png`), resvg.render().asPng());
+  console.log(`wrote public/icon/${size}.png`);
 }
