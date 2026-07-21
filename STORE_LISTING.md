@@ -7,11 +7,11 @@ Copy/paste from here.
 
 ## Name
 
-Unhook for LinkedIn
+Unhook for LinkedIn - Block the LinkedIn home feed
 
 ## Short description (≤132 chars)
 
-A browser extension that hides your LinkedIn feed. Get your work done without distraction. Fully private, no tracking.
+Hide your LinkedIn feed and get your work done without distraction. Fully private, no tracking.
 
 ## Category
 
@@ -21,9 +21,9 @@ Productivity
 
 ## Long description (store listing body)
 
-Hide your LinkedIn home feed so you can get in, do what you came to do, and get out. No tracking, no sign-up.
+Hide your LinkedIn home feed so you do what you came to do and avoid distractions. No tracking, no sign-up.
 
-The LinkedIn home feed is built to keep you scrolling. Unhook removes it while keeping everything else — messaging, jobs, your network — exactly as it is. Toggle it through the popup to set up your own distraction-free LinkedIn.
+The LinkedIn home feed is built to keep you scrolling. Unhook for LinkedIn removes it while keeping everything else, messaging, jobs, your network, exactly as it is. Toggle it through the popup to set up your own distraction-free LinkedIn.
 
 OPTIONS:
 - Hide the home feed
@@ -31,7 +31,7 @@ OPTIONS:
 - Pause anytime, then turn it back on in one click
 - Light or dark theme
 
-Unhook collects no data, has no analytics or trackers, and needs no account. Your settings stay on your device and never leave it. It runs only on LinkedIn, hides elements with CSS so nothing slows down, and never deletes anything — every change is instant and reversible.
+Unhook collects no data, has no analytics or trackers, and needs no account. Your settings stay on your device and never leave it. It runs only on LinkedIn, hides elements with CSS so nothing slows down, and never deletes anything. Every change is instant and reversible.
 
 Unhook for LinkedIn is an independent project and is not affiliated with, endorsed by, or sponsored by LinkedIn Corporation.
 

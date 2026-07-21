@@ -4,12 +4,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    name: 'Unhook for LinkedIn',
-    description: 'Take back control of LinkedIn. Hide or redirect the home feed with no tracking.',
+    name: 'Unhook for LinkedIn: Hide the Feed',
+    description: 'Hide your LinkedIn feed and get your work done without distraction. Fully private, no tracking.',
     permissions: ['storage'],
     host_permissions: ['https://www.linkedin.com/*'],
     action: {
-      default_title: 'Unhook for LinkedIn',
+      default_title: 'Unhook for LinkedIn: Hide the Feed',
     },
     browser_specific_settings: {
       gecko: {

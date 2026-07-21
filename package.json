@@ -1,6 +1,6 @@
 {
   "name": "unhook-linkedin",
-  "description": "Take back control of LinkedIn. Hide or redirect the home feed with no tracking.",
+  "description": "Hide your LinkedIn feed and get your work done without distraction. Fully private, no tracking.",
   "private": true,
   "version": "1.0.0",
   "type": "module",
