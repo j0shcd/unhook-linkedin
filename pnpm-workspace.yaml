@@ -4,3 +4,7 @@ overrides:
 onlyBuiltDependencies:
   - esbuild
   - spawn-sync
+
+allowBuilds:
+  esbuild: true
+  spawn-sync: true
