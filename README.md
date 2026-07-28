@@ -2,6 +2,10 @@
 
 Get your work done without distraction. Fully private, no tracking.
 
+[Download now for Chrome](https://chromewebstore.google.com/detail/unhook-for-linkedin-block/jfpafmnlbhjckldaoadpbaknhdnopkif?hl=en-GB&authuser=1)
+
+[Download now for Firefox](https://addons.mozilla.org/en-US/firefox/addon/unhook-for-linkedin/)
+
 A lightweight browser extension that hides the LinkedIn home feed, while keeping what's useful (messages, jobs, your network).
 It works entirely on-device: no accounts, no analytics, no automatic network requests.
 
