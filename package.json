@@ -14,7 +14,8 @@
     "icons": "node scripts/gen-icons.mjs",
     "compile": "tsc --noEmit",
     "check": "pnpm compile && pnpm build && pnpm build:firefox",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "reinstall": "bash scripts/install-nosync.sh"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -1,5 +1,6 @@
 node_modules
 .git.nosync/
+.vite.nosync/
 .wxt
 .output
 stats.html

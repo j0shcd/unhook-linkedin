@@ -24,6 +24,7 @@ export default defineConfig({
     },
   },
   vite: () => ({
+    cacheDir: '.vite.nosync',
     plugins: [tailwindcss()],
   }),
 });
