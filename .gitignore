@@ -1,4 +1,5 @@
 node_modules
+.git.nosync/
 .wxt
 .output
 stats.html
