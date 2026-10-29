@@ -15,8 +15,6 @@ export default defineConfig({
       gecko: {
         id: '{3f0c9b31-5e8b-4a96-9d21-2c7d42aa44d8}',
         strict_min_version: '121.0',
-        // Newer AMO data-consent key, not yet in WXT's manifest types.
-        // @ts-expect-error - data_collection_permissions is a valid gecko key
         data_collection_permissions: {
           required: ['none'],
         },

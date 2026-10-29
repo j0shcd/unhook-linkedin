@@ -30,7 +30,7 @@ without reloading the page.
 
 ## Development
 
-Requires Node 20+ and pnpm.
+Requires patched Node 24.22.1+ in the 24.x line and pnpm 11.5.1.
 Firefox builds target Firefox 121+.
 
 ```bash
@@ -66,3 +66,34 @@ commercial license.
 
 _Unhook for LinkedIn is an independent project and is not affiliated with,
 endorsed by, or sponsored by LinkedIn Corporation._
+
+## Dependency security
+
+The 29 October 2026 cleanup updates WXT 0.19 to 0.21.5 and its React module to
+1.2.2. The module owns its Vite React plugin, removing the unused direct plugin.
+Deprecated sandbox/storage imports use the documented wxt/utils paths; the
+obsolete Gecko type-error suppression is removed. Settings and behavior are
+unchanged. No browser installation, store upload or deployment was performed.
+
+The full pnpm audit falls from 54 advisory matches (two critical, 36 high) to
+one moderate: phin 2.9.3 through potrace/Jimp,
+[GHSA-x565-32qp-m3vf](https://github.com/advisories/GHSA-x565-32qp-m3vf).
+That HTTP client is a development dependency, not shipped extension code.
+The inspected icon generator supplies local buffers without HTTP requests or
+sensitive headers. This limits that path's exposure but does not remove the
+finding. Next bounded step: update/replace icon generation with verified output
+parity; do not force a phin major override under its old parent.
+
+The clean installation replaces the corrupted iCloud dependency tree.
+pnpm check passes types and Chrome MV3/Firefox MV2 production builds in both
+the isolated candidate and actual checkout. Production manifests retain storage
+plus LinkedIn-only host access, document_start injection, Firefox 121 minimum,
+the existing extension ID and the no-data-collection declaration. The previous
+Chrome output was a development build, not a production permission baseline.
+
+Run pnpm security:audit for a fresh result; it intentionally stays red for the
+moderate finding. Runtime browser verification was blocked by automatic approval
+review under the global rule requiring explicit permission for scripted browser
+launches; it is not claimed performed. Build/manifest checks pass, and browser
+verification remains a separately approved fixture check or manual release step.
+These changes are local; each push requires owner confirmation.
