@@ -33,9 +33,9 @@
     "typescript": "^5.9.3",
     "wxt": "^0.21.5"
   },
-  "packageManager": "pnpm@11.5.1",
+  "packageManager": "pnpm@11.28.8",
   "engines": {
     "node": ">=24.22.1 <25",
-    "pnpm": ">=11.5.1 <12"
+    "pnpm": ">=11.28.8 <12"
   }
 }

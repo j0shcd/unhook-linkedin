@@ -8,3 +8,6 @@ onlyBuiltDependencies:
 allowBuilds:
   esbuild: true
   spawn-sync: true
+
+# Explicit reinstall owns dependency writes under iCloud; running a command must not reinstall.
+verifyDepsBeforeRun: false

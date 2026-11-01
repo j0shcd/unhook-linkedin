@@ -30,7 +30,7 @@ without reloading the page.
 
 ## Development
 
-Requires patched Node 24.22.1+ in the 24.x line and pnpm 11.5.1.
+Requires patched Node 24.22.1+ in the 24.x line and pnpm 11.28.8.
 Firefox builds target Firefox 121+.
 
 ```bash
@@ -68,6 +68,23 @@ _Unhook for LinkedIn is an independent project and is not affiliated with,
 endorsed by, or sponsored by LinkedIn Corporation._
 
 ## Dependency security
+
+On 31 October, the package-manager pin and minimum move from pnpm 11.5.1 to
+11.28.8 within the supported major. The former matches published installer
+path-traversal and configuration vulnerabilities, including arbitrary writes
+with lifecycle scripts disabled. The new release has no current matched pnpm
+advisory; its registry signature and provenance were verified. This changes no
+application dependency versions or lockfile. `verifyDepsBeforeRun: false` keeps
+command execution from implicitly reinstalling dependencies under iCloud; use
+the existing explicit reinstall workflow. A frozen isolated install,
+typecheck and both production builds pass under Node 24.22.1 in the isolated
+candidate and actual checkout. Reappeared iCloud dependency conflicts were
+removed by a guarded fresh-tree swap; the complete prior tree is retained for
+rollback.
+[Installer advisory](https://github.com/pnpm/pnpm/security/advisories/GHSA-vq4v-j7r6-jq4m).
+The Volta global pnpm default is separate and remains unchanged pending owner
+approval; do not assume this repository pin updated other installations.
+
 
 The 29 October 2026 cleanup updates WXT 0.19 to 0.21.5 and its React module to
 1.2.2. The module owns its Vite React plugin, removing the unused direct plugin.
