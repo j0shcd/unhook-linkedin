@@ -123,7 +123,11 @@ function setFlag(el: HTMLElement, attr: string, on: boolean) {
 }
 
 function isOnFeed(): boolean {
-  return location.pathname === '/' || /^\/feed\/?$/.test(location.pathname);
+  return isFeedPath(location.pathname);
+}
+
+function isFeedPath(pathname: string): boolean {
+  return pathname === '/' || /^\/feed(?:\/foryou)?\/?$/.test(pathname);
 }
 
 function isHomeNavigationClick(event: MouseEvent): boolean {
@@ -145,7 +149,7 @@ function isLinkedInHomeUrl(href: string): boolean {
     const url = new URL(href, location.href);
     const isLinkedInHost =
       url.hostname === 'linkedin.com' || url.hostname === 'www.linkedin.com';
-    return isLinkedInHost && (url.pathname === '/' || /^\/feed\/?$/.test(url.pathname));
+    return isLinkedInHost && isFeedPath(url.pathname);
   } catch {
     return false;
   }

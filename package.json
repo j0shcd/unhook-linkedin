@@ -13,7 +13,8 @@
     "zip:firefox": "wxt zip -b firefox",
     "icons": "node scripts/gen-icons.mjs",
     "compile": "tsc --noEmit",
-    "check": "pnpm compile && pnpm build && pnpm build:firefox",
+    "test": "node --experimental-vm-modules --test tests/*.test.mjs",
+    "check": "pnpm test && pnpm compile && pnpm build && pnpm build:firefox",
     "postinstall": "wxt prepare",
     "reinstall": "bash scripts/install-nosync.sh",
     "security:audit": "pnpm --ignore-pnpmfile audit --audit-level low"

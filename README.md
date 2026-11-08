@@ -11,8 +11,8 @@ It works entirely on-device: no accounts, no analytics, no automatic network req
 
 ## Features
 
-- **Block the home feed** at `linkedin.com/feed`, with an optional redirect to
-  your Messages or the Jobs page instead.
+- **Block the home feed** at `linkedin.com/feed/` and `linkedin.com/feed/foryou/`,
+  with an optional redirect to your Messages or the Jobs page instead.
 - **Pause anytime** with one click.
 - **Light / dark / system** theme.
 
@@ -38,7 +38,8 @@ pnpm install          # install dependencies
 pnpm dev              # run in Chrome (dev)
 pnpm dev:firefox      # run in Firefox (dev)
 pnpm compile          # type-check (tsc --noEmit)
-pnpm check            # type-check and production-build both browsers
+pnpm test             # content-script regression tests (no browser launch)
+pnpm check            # tests, type-check and production-build both browsers
 pnpm build            # production build (Chrome)
 pnpm build:firefox    # production build (Firefox)
 pnpm zip              # packaged .zip for the Chrome Web Store
@@ -46,6 +47,13 @@ pnpm zip:firefox      # packaged .zip for Firefox Add-ons (AMO)
 ```
 
 Build output lands in `.output/`.
+
+The feed routes share one pathname matcher for blocking, redirects, and the
+early click gate. Both routes accept an optional trailing slash and query
+parameters; individual post pages remain accessible. Regression tests execute
+the content script with a small DOM and storage fixture, covering startup,
+settings changes, dynamically inserted posts, and client-side navigation.
+They do not verify browser layout or LinkedIn's current markup.
 
 ### Loading the production build manually
 
@@ -57,6 +65,13 @@ To test against your real, logged-in LinkedIn account:
 - **Firefox:** `pnpm build:firefox`, then go to `about:debugging` → **This
   Firefox** → **Load Temporary Add-on**, and select any file inside
   `.output/firefox-mv2` (e.g. `manifest.json`).
+
+Before a store release, check both `/feed/` and `/feed/foryou/` on LinkedIn:
+posts should hide while the composer remains available, and each redirect
+setting should take you to its selected destination. Check direct loads and
+navigation from another LinkedIn page. Pause should restore the feed, and
+individual post pages should remain accessible. Rebuilding does not update an
+installed or store extension.
 
 ## License
 
