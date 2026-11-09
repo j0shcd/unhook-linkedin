@@ -161,3 +161,23 @@ review under the global rule requiring explicit permission for scripted browser
 launches; it is not claimed performed. Build/manifest checks pass, and browser
 verification remains a separately approved fixture check or manual release step.
 These changes are local; each push requires owner confirmation.
+
+### Review repair verification — 9 November 2026
+
+All seven review findings are repaired locally. `pnpm check` passes 91 tests,
+TypeScript, and Chrome/Firefox production builds. The Pages workflow uses
+commit-pinned actions and passes actionlint. Targeted tests fail when the old
+settings, startup, normalization, and installer bugs are restored in isolated
+copies. Independent verification also covers recovery interrupted halfway
+through restoring a generation. The macOS `lockf` path is exercised; Linux's
+`flock` branch has not been run on Linux.
+
+A real frozen install, a second offline reinstall over that installation, and
+type-checking pass in a disposable copy with a separate package store. The
+working checkout's dependencies are untouched. The fixes are committed locally
+and await owner approval to push. Next: push the approved commits and inspect
+the Pages run; perform the manual LinkedIn checks above before a store release.
+The Pages job publishes the privacy site and does not run the extension tests.
+The existing moderate icon-tooling advisory remains the separate dependency
+follow-up described above. No installed extension or store listing is updated
+by these local commits.
