@@ -16,6 +16,10 @@ It works entirely on-device: no accounts, no analytics, no automatic network req
 - **Pause anytime** with one click.
 - **Light / dark / system** theme.
 
+If settings cannot be loaded, the popup shows **Try again** and the LinkedIn
+page stays usable without blocking. A later settings change restores normal
+operation. Failed saves keep your selection visible with a retry button.
+
 ## Privacy
 
 The extension collects nothing, sends nothing, and shares nothing. Your settings
@@ -38,7 +42,7 @@ pnpm install          # install dependencies
 pnpm dev              # run in Chrome (dev)
 pnpm dev:firefox      # run in Firefox (dev)
 pnpm compile          # type-check (tsc --noEmit)
-pnpm test             # content-script regression tests (no browser launch)
+pnpm test             # regression tests (no browser launch)
 pnpm check            # tests, type-check and production-build both browsers
 pnpm build            # production build (Chrome)
 pnpm build:firefox    # production build (Firefox)
@@ -54,6 +58,13 @@ parameters; individual post pages remain accessible. Regression tests execute
 the content script with a small DOM and storage fixture, covering startup,
 settings changes, dynamically inserted posts, and client-side navigation.
 They do not verify browser layout or LinkedIn's current markup.
+
+Settings tests control storage reads, writes, and notifications to cover queued
+edits, failed saves, startup recovery, and stale reads. The popup keeps the latest
+requested settings while writes finish; notifications trigger a fresh read
+instead of applying an older snapshot. Redirect exclusivity is enforced in
+`lib/settings.ts`: choosing a destination clears the other, and existing stored
+values with both enabled retain the previous Messages priority.
 
 ### Loading the production build manually
 

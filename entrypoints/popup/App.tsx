@@ -5,7 +5,7 @@ import { useResolvedTheme, useSettings } from '@/lib/useSettings';
 import type { Theme } from '@/lib/settings';
 
 export function App() {
-  const { settings, update, loaded } = useSettings();
+  const { settings, update, loaded, error, retry } = useSettings();
   const resolved = useResolvedTheme(settings.theme);
 
   useEffect(() => {
@@ -13,13 +13,18 @@ export function App() {
   }, [resolved]);
 
   if (!loaded) {
-    return <div className="p-6 text-sm text-muted">Loading…</div>;
+    return (
+      <div className="p-6 text-sm">
+        {error ? <SettingsError error={error} retry={retry} /> : 'Loading…'}
+      </div>
+    );
   }
 
   const off = !settings.enabled;
 
   return (
     <div className="flex flex-col">
+      {error && <div className="px-4 py-3"><SettingsError error={error} retry={retry} /></div>}
       <header className="flex items-center justify-between border-b border-ink/10 px-4 py-3 dark:border-paper/15">
         <div className="flex items-center gap-2">
           <Logo className="h-7 w-7 text-ink dark:text-paper" />
@@ -49,17 +54,13 @@ export function App() {
             label="Redirect to messages"
             checked={settings.redirectMessages}
             disabled={off || !settings.blockFeed}
-            onChange={(v) =>
-              update({ redirectMessages: v, ...(v ? { redirectJobs: false } : {}) })
-            }
+            onChange={(v) => update({ redirectMessages: v })}
           />
           <Toggle
             label="Redirect to jobs"
             checked={settings.redirectJobs}
             disabled={off || !settings.blockFeed}
-            onChange={(v) =>
-              update({ redirectJobs: v, ...(v ? { redirectMessages: false } : {}) })
-            }
+            onChange={(v) => update({ redirectJobs: v })}
           />
         </div>
       </section>
@@ -70,6 +71,17 @@ export function App() {
         </div>
         <ThemePicker value={settings.theme} onChange={(t) => update({ theme: t })} />
       </section>
+    </div>
+  );
+}
+
+function SettingsError({ error, retry }: { error: 'load' | 'save'; retry: () => void }) {
+  return (
+    <div role="alert" className="text-sm">
+      <p>{error === 'load' ? 'Couldn’t load your settings.' : 'Your last change wasn’t saved.'}</p>
+      <button type="button" onClick={retry} className="mt-2 rounded bg-ink px-3 py-2 text-paper hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-paper dark:text-ink dark:hover:bg-paper/90">
+        Try again
+      </button>
     </div>
   );
 }

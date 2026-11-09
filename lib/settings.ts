@@ -34,9 +34,16 @@ export async function setSettings(next: Settings): Promise<void> {
 
 export async function patchSettings(patch: Partial<Settings>): Promise<Settings> {
   const current = await getSettings();
-  const next = normalizeSettings({ ...current, ...patch });
+  const next = mergeSettings(current, patch);
   await setSettings(next);
   return next;
+}
+
+export function mergeSettings(current: Settings, patch: Partial<Settings>): Settings {
+  const next = { ...current, ...patch };
+  if (patch.redirectMessages === true) next.redirectJobs = false;
+  else if (patch.redirectJobs === true) next.redirectMessages = false;
+  return normalizeSettings(next);
 }
 
 export function watchSettings(cb: (s: Settings) => void): () => void {
@@ -47,12 +54,13 @@ export function watchSettings(cb: (s: Settings) => void): () => void {
 
 function normalizeSettings(value: Partial<Settings> | null | undefined): Settings {
   const source = value ?? {};
+  const redirectMessages = booleanOrDefault(source.redirectMessages, DEFAULT_SETTINGS.redirectMessages);
 
   return {
     enabled: booleanOrDefault(source.enabled, DEFAULT_SETTINGS.enabled),
     blockFeed: booleanOrDefault(source.blockFeed, DEFAULT_SETTINGS.blockFeed),
-    redirectMessages: booleanOrDefault(source.redirectMessages, DEFAULT_SETTINGS.redirectMessages),
-    redirectJobs: booleanOrDefault(source.redirectJobs, DEFAULT_SETTINGS.redirectJobs),
+    redirectMessages,
+    redirectJobs: !redirectMessages && booleanOrDefault(source.redirectJobs, DEFAULT_SETTINGS.redirectJobs),
     theme: isTheme(source.theme) ? source.theme : DEFAULT_SETTINGS.theme,
   };
 }

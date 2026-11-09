@@ -99,3 +99,30 @@ test('external and individual-post links do not activate the early gate', async 
     assert.equal(harness.root.hasAttribute('data-unhook-on-feed'), false, href);
   }
 });
+
+test('initial storage failure keeps navigation and settings recovery working', async () => {
+  const harness = await createContentHarness('/feed/', {}, {
+    getValue: () => Promise.reject(new Error('storage unavailable')),
+  });
+  await harness.start();
+  assert.equal(harness.root.hasAttribute('data-unhook-block-feed'), false, 'unknown preferences leave the page usable');
+  harness.navigate('/jobs/');
+  harness.updateSettings({ enabled: true });
+  harness.navigate('/feed/foryou/');
+  assertBlocked(harness, true);
+  harness.updateSettings({ enabled: false });
+  assert.equal(harness.post.hasAttribute('data-unhook-feed-target'), false);
+});
+
+test('a settings notification during startup wins over the older initial read', async () => {
+  let resolveRead;
+  const harness = await createContentHarness('/feed/', {}, {
+    getValue: () => new Promise(resolve => { resolveRead = resolve; }),
+  });
+  const started = harness.start();
+  harness.updateSettings({ enabled: false });
+  resolveRead({ enabled: true });
+  await started;
+  assert.equal(harness.root.hasAttribute('data-unhook-block-feed'), false);
+  assert.equal(harness.post.hasAttribute('data-unhook-feed-target'), false);
+});

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   DEFAULT_SETTINGS,
   getSettings,
+  mergeSettings,
   setSettings,
   watchSettings,
   type Settings,
@@ -10,39 +11,61 @@ import {
 export function useSettings() {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<'load' | 'save' | null>(null);
+  const desired = useRef(DEFAULT_SETTINGS);
+  const dirty = useRef(false);
+  const mounted = useRef(false);
+  const revision = useRef(0);
   const writeQueue = useRef(Promise.resolve());
 
-  useEffect(() => {
-    let mounted = true;
-    getSettings().then((s) => {
-      if (!mounted) return;
-      setSettingsState(s);
+  const load = async () => {
+    if (dirty.current) return;
+    const request = ++revision.current;
+    setError(null);
+    try {
+      const next = await getSettings();
+      if (!mounted.current || request !== revision.current) return;
+      desired.current = next;
+      setSettingsState(next);
       setLoaded(true);
-    });
-    const unwatch = watchSettings((next) => {
-      if (mounted) setSettingsState(next);
-    });
+    } catch {
+      if (mounted.current && request === revision.current) setError('load');
+    }
+  };
+
+  useEffect(() => {
+    mounted.current = true;
+    // A notification is a signal to read current storage, not a snapshot to
+    // apply: an earlier write's notification may arrive after a newer edit.
+    const unwatch = watchSettings(() => { void load(); });
+    void load();
     return () => {
-      mounted = false;
+      mounted.current = false;
+      revision.current++;
       unwatch();
     };
   }, []);
 
   const update = (patch: Partial<Settings>) => {
-    setSettingsState((prev) => {
-      const next = { ...prev, ...patch };
-      writeQueue.current = writeQueue.current
-        .catch(() => undefined)
-        .then(() => setSettings(next))
-        .catch(async () => {
-          const stored = await getSettings();
-          setSettingsState(stored);
-        });
-      return next;
+    const next = mergeSettings(desired.current, patch);
+    const request = ++revision.current;
+    desired.current = next;
+    dirty.current = true;
+    setSettingsState(next);
+    setError(null);
+    // Persistence belongs to the event, never a replayable React updater.
+    writeQueue.current = writeQueue.current.then(async () => {
+      try {
+        await setSettings(next);
+        if (request === revision.current) dirty.current = false;
+      } catch {
+        if (mounted.current && request === revision.current) setError('save');
+      }
     });
   };
 
-  return { settings, update, loaded };
+  const retry = () => dirty.current ? update({}) : void load();
+  return { settings, update, loaded, error, retry };
 }
 
 export function useResolvedTheme(theme: Settings['theme']): 'light' | 'dark' {

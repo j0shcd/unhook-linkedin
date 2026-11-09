@@ -26,7 +26,7 @@ class HTMLAnchorElement extends Element {
   closest(selector) { return selector === 'a[href]' ? this : null; }
 }
 
-export async function createContentHarness(path, settings = {}) {
+export async function createContentHarness(path, settings = {}, { getValue } = {}) {
   const root = new Element();
   const post = new Element();
   const composer = new Element();
@@ -93,7 +93,7 @@ export async function createContentHarness(path, settings = {}) {
       storage: {
         defineItem() {
           return {
-            async getValue() { return settings; },
+            async getValue() { return getValue ? getValue() : settings; },
             watch(callback) { watchSettings = callback; return () => {}; },
           };
         },
@@ -120,7 +120,7 @@ export async function createContentHarness(path, settings = {}) {
       else if (event === 'mutation') observeMutation();
       else listeners.get(event)();
     },
-    updateSettings(next) { settings = { ...settings, ...next }; watchSettings(settings); flushTimers(); },
+    updateSettings(next) { settings = { ...settings, ...next }; watchSettings?.(settings); flushTimers(); },
     insertPost() {
       const next = new Element();
       feed.children.push(next);

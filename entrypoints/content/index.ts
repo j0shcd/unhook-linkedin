@@ -36,7 +36,8 @@ export default defineContentScript({
   cssInjectionMode: 'manifest',
   async main() {
     applyEarlyFeedGate(DEFAULT_SETTINGS);
-    let current = await getSettings();
+    let current = DEFAULT_SETTINGS;
+    let receivedSettings = false;
     let applyTimer: ReturnType<typeof setTimeout> | undefined;
 
     const scheduleApply = () => {
@@ -47,9 +48,8 @@ export default defineContentScript({
       }, 300);
     };
 
-    apply(current);
-
     watchSettings((next) => {
+      receivedSettings = true;
       current = next;
       scheduleApply();
     });
@@ -94,6 +94,16 @@ export default defineContentScript({
     }
     window.addEventListener('popstate', onUrlChange);
     window.setInterval(onUrlChange, 500);
+
+    // Subscribe before reading so a newer notification cannot be overwritten
+    // by the startup snapshot. A failed read must not abort the listeners.
+    try {
+      const initial = await getSettings();
+      if (!receivedSettings) current = initial;
+    } catch {
+      if (!receivedSettings) current = { ...DEFAULT_SETTINGS, enabled: false };
+    }
+    apply(current);
   },
 });
 
