@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, cpSync, existsSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, cpSync, existsSync, rmSync, symlinkSync, lstatSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -49,8 +49,13 @@ esac
 `, { mode: 0o755 });
   return {
     root,
-    run(fail = '', args = []) {
-      return spawnSync('bash', [script, ...args], {
+    run(fail = '', args = [], lock = false) {
+      const command = lock ? ['-c', `
+        exec 9> .reinstall.lock
+        if command -v lockf >/dev/null; then lockf -s -t 0 9; else flock -n 9; fi
+        bash "$@"
+      `, 'lock-holder', script, ...args] : [script, ...args];
+      return spawnSync('bash', command, {
         cwd: root, env: { ...process.env, TMPDIR: temporary, PATH: bin + ':' + process.env.PATH, FAIL_STAGE: fail },
         encoding: 'utf8', timeout: 10000,
       });
@@ -135,4 +140,45 @@ test('recovery refuses to interfere with an active reinstall', t => {
   writeFileSync(join(h.root, '.reinstall-backup/pid'), String(process.pid));
   assert.notEqual(h.run('', ['--recover']).status, 0);
   assert.equal(existsSync(join(h.root, 'node_modules/old')), true);
+});
+
+test('recovery never writes through a pre-existing temporary-file symlink', t => {
+  const h = fixture(t);
+  assert.equal(h.run('kill').signal, 'SIGKILL');
+  const foreign = join(h.root, 'foreign-user-file');
+  writeFileSync(foreign, 'keep');
+  symlinkSync(foreign, join(h.root, '.reinstall-backup/restore-package.json'));
+  const result = h.run('', ['--recover']);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(readFileSync(foreign, 'utf8'), 'keep');
+  assert.equal(lstatSync(join(h.root, 'package.json')).isSymbolicLink(), false);
+  h.assertRestored();
+});
+
+test('recovery refuses a second recovery before changing the checkout', t => {
+  const h = fixture(t);
+  assert.equal(h.run('kill').signal, 'SIGKILL');
+  assert.notEqual(h.run('', ['--recover'], true).status, 0);
+  assert.equal(existsSync(join(h.root, '.reinstall-backup/node_modules/old')), true);
+  assert.equal(existsSync(join(h.root, 'node_modules/new')), true);
+});
+
+test('install and recovery share the same operating-system lock', t => {
+  const h = fixture(t);
+  assert.notEqual(h.run('', [], true).status, 0);
+  h.assertRestored();
+  assert.equal(h.run().status, 0);
+});
+
+test('the persistent lock preserves existing contents and refuses symlinks', t => {
+  const h = fixture(t);
+  const lock = join(h.root, '.reinstall.lock');
+  writeFileSync(lock, 'keep');
+  assert.equal(h.run().status, 0);
+  assert.equal(readFileSync(lock, 'utf8'), 'keep');
+  rmSync(lock);
+  const foreign = join(h.root, 'foreign-lock'); writeFileSync(foreign, 'user file');
+  symlinkSync(foreign, lock);
+  assert.notEqual(h.run().status, 0);
+  assert.equal(readFileSync(foreign, 'utf8'), 'user file');
 });

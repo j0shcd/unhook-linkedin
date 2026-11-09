@@ -11,6 +11,18 @@ INSTALL_TMP=''
 
 fail() { echo "[install-nosync] $*" >&2; exit 1; }
 
+# Keep this inode between runs. The shared descriptor holds the OS lock until
+# the script and its children exit, including after an uncatchable signal.
+[[ ! -L .reinstall.lock ]] || fail 'refusing symlink: .reinstall.lock'
+exec 9>> .reinstall.lock
+if command -v lockf >/dev/null 2>&1; then
+  lockf -s -t 0 9 || fail 'another reinstall or recovery is active'
+elif command -v flock >/dev/null 2>&1; then
+  flock -n 9 || fail 'another reinstall or recovery is active'
+else
+  fail 'reinstall requires lockf (macOS/BSD) or flock (Linux)'
+fi
+
 # Writes are confined to these generated directories and manifests. Refuse
 # symlinks at promotion and recovery; no paths are read from the journal.
 check_paths() {
@@ -21,7 +33,7 @@ check_paths() {
 }
 
 restore() {
-  local path
+  local path restore_tmp
   [[ -f "$BACKUP/ready" ]] || return 0 # Checkout has not been changed.
   for path in node_modules .wxt; do
     if [[ -d "$BACKUP/$path" ]]; then
@@ -35,8 +47,9 @@ restore() {
     if [[ -f "$BACKUP/$path" ]]; then
       # Keep snapshots until ALL restoration finishes so recovery can itself
       # be interrupted. Replace manifests atomically on this filesystem.
-      cp "$BACKUP/$path" "$BACKUP/restore-$path" || return 1
-      mv "$BACKUP/restore-$path" "$path" || return 1
+      restore_tmp="$(mktemp "$BACKUP/restore.XXXXXX")" || return 1
+      cp "$BACKUP/$path" "$restore_tmp" || return 1
+      mv "$restore_tmp" "$path" || return 1
     elif [[ ! -f "$BACKUP/had-$path" ]]; then
       rm -f "$path" || return 1
     fi

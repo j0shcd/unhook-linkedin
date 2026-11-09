@@ -73,7 +73,10 @@ values with both enabled retain the previous Messages priority.
 `pnpm reinstall` installs outside iCloud, then retains the previous dependency
 tree, generated WXT state, and manifests until `pnpm rebuild` and `wxt prepare`
 succeed. Failed preparation or a handled interrupt restores the previous
-generation. The helper refuses symlinked targets and concurrent reinstalls.
+generation. The helper refuses symlinked targets and concurrent reinstalls or
+recoveries using an operating-system lock (`lockf` on macOS/BSD, `flock` on
+Linux). Keep the ignored `.reinstall.lock` file in place; it holds no settings
+or recovery state, and its existence does not mean a process is active.
 Fault-injection tests cover success, failures, interrupts, and recovery without
 installing real dependencies.
 
