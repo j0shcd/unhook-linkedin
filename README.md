@@ -54,7 +54,9 @@ Build output lands in `.output/`.
 
 The feed routes share one pathname matcher for blocking, redirects, and the
 early click gate. Both routes accept an optional trailing slash and query
-parameters; individual post pages remain accessible. Regression tests execute
+parameters; individual post pages remain accessible. Feed targeting selects
+direct children of the recognized feed containers, excluding the composer;
+it does not scan post descendants or action labels. Regression tests execute
 the content script with a small DOM and storage fixture, covering startup,
 settings changes, dynamically inserted posts, and client-side navigation.
 They do not verify browser layout or LinkedIn's current markup.

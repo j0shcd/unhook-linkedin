@@ -9,27 +9,6 @@ const MAIN_FEED_SELECTORS = [
   '[componentkey="container-update-list_mainFeed-lazy-container"]',
 ];
 
-const FEED_POST_SELECTORS = [
-  '.fie-impression-container',
-  '.feed-shared-update-v2',
-  '.feed-shared-update-v2__update',
-  '[data-view-name="feed-full-update"]',
-  '[data-view-name="feed-update"]',
-  '[data-finite-scroll-hotkey-item]',
-  '[componentkey^="feed-commentary_"]',
-  '[aria-label^="Open control menu for post by" i]',
-  '[aria-label^="Hide post by" i]',
-  '[aria-label^="Post impressions" i]',
-  '[aria-label^="Reaction button state:" i]',
-  '.feed-shared-social-action-bar',
-  '.social-details-social-counts',
-  '.update-components-actor',
-  'div[data-urn^="urn:li:activity"]',
-  'article[data-urn^="urn:li:activity"]',
-  '[data-id^="urn:li:activity"]',
-  '[data-activity-urn^="urn:li:activity"]',
-];
-
 export default defineContentScript({
   matches: ['https://www.linkedin.com/*'],
   runAt: 'document_start',
@@ -180,20 +159,6 @@ function markFeedTargets() {
       }
     });
 
-    feed.querySelectorAll(FEED_POST_SELECTORS.join(',')).forEach((el) => {
-      const item = findMainFeedItem(el, feed);
-      if (item && !isComposerItem(item)) {
-        targets.add(item);
-      }
-    });
-
-    feed.querySelectorAll('button, a').forEach((el) => {
-      if (!isPostAction(el)) return;
-      const item = findMainFeedItem(el, feed);
-      if (item && !isComposerItem(item)) {
-        targets.add(item);
-      }
-    });
   });
 
   document.querySelectorAll(`[${FEED_TARGET_ATTR}]`).forEach((el) => {
@@ -211,29 +176,6 @@ function markFeedTargets() {
 
 function getMainFeeds(): Element[] {
   return Array.from(document.querySelectorAll(MAIN_FEED_SELECTORS.join(',')));
-}
-
-function isPostAction(el: Element): boolean {
-  const label = el.getAttribute('aria-label') ?? '';
-  return (
-    /^Open control menu for post by/i.test(label) ||
-    /^Hide post by/i.test(label) ||
-    /^Post impressions/i.test(label) ||
-    /^Reaction button state:/i.test(label) ||
-    /^Comment$/i.test(label) ||
-    /^Repost$/i.test(label) ||
-    /^Send$/i.test(label)
-  );
-}
-
-function findMainFeedItem(el: Element, feed: Element): Element | null {
-  let current: Element | null = el;
-
-  while (current?.parentElement && current.parentElement !== feed) {
-    current = current.parentElement;
-  }
-
-  return current?.parentElement === feed ? current : null;
 }
 
 function isComposerItem(el: Element): boolean {
