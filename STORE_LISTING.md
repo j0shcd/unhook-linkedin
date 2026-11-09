@@ -59,7 +59,8 @@ Answer these as follows in the Developer Dashboard:
 
 - AMO reviews source. The submitted JS is bundled by Vite/WXT. In the
   "source code" step, point reviewers to the public Git repository and the build
-  command: `pnpm install && pnpm zip:firefox` (Node 20+, Firefox 121+). Output
+  command: `pnpm install && pnpm zip:firefox` (Node 24.22.1+ in the 24.x line,
+  pnpm 11.28.8, Firefox 121+; see [Development](README.md#development)). Output
   is in `.output/`.
 - No minification obfuscation, no remote code — review should be quick.
 
