@@ -66,6 +66,22 @@ instead of applying an older snapshot. Redirect exclusivity is enforced in
 `lib/settings.ts`: choosing a destination clears the other, and existing stored
 values with both enabled retain the previous Messages priority.
 
+### Reinstall recovery
+
+`pnpm reinstall` installs outside iCloud, then retains the previous dependency
+tree, generated WXT state, and manifests until `pnpm rebuild` and `wxt prepare`
+succeed. Failed preparation or a handled interrupt restores the previous
+generation. The helper refuses symlinked targets and concurrent reinstalls.
+Fault-injection tests cover success, failures, interrupts, and recovery without
+installing real dependencies.
+
+After an uncatchable interruption, run `pnpm reinstall --recover` to restore the
+previous generation, then retry `pnpm reinstall`. Recovery refuses to run while
+the recorded installer process is alive. Do not delete `.reinstall-backup`:
+it holds the rollback data. An uncatchable interruption can also leave the
+temporary install directory printed by the helper; remove that specific
+directory after recovery if it remains.
+
 ### Loading the production build manually
 
 To test against your real, logged-in LinkedIn account:
