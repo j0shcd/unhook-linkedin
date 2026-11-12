@@ -1,5 +1,8 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import { createDevSecurity } from './scripts/dev-security';
+
+const devSecurity = createDevSecurity();
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
@@ -21,8 +24,8 @@ export default defineConfig({
       },
     },
   },
-  vite: () => ({
+  vite: (env) => ({
     cacheDir: '.vite.nosync',
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), ...(env.command === 'serve' ? [devSecurity()] : [])],
   }),
 });
