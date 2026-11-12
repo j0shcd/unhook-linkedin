@@ -52,6 +52,13 @@ pnpm zip:firefox      # packaged .zip for Firefox Add-ons (AMO)
 
 Build output lands in `.output/`.
 
+Development WebSocket clients use Vite's per-session token, including WXT's
+background and HTML reload clients. The optional `/__open-in-editor` HTTP route
+is disabled. Production builds do not include this development guard or its
+session credential. Browser-free regression fixtures start their own loopback
+server with browser launching disabled; they exercise both browser build targets
+and server restarts, rather than attaching to a running development session.
+
 The feed routes share one pathname matcher for blocking, redirects, and the
 early click gate. Both routes accept an optional trailing slash and query
 parameters; individual post pages remain accessible. Feed targeting selects
@@ -162,22 +169,58 @@ launches; it is not claimed performed. Build/manifest checks pass, and browser
 verification remains a separately approved fixture check or manual release step.
 These changes are local; each push requires owner confirmation.
 
-### Review repair verification — 9 November 2026
+### Security audit and hardening — 12 November 2026
 
-All seven review findings are repaired locally. `pnpm check` passes 91 tests,
-TypeScript, and Chrome/Firefox production builds. The Pages workflow uses
-commit-pinned actions and passes actionlint. Targeted tests fail when the old
-settings, startup, normalization, and installer bugs are restored in isolated
-copies. Independent verification also covers recovery interrupted halfway
-through restoring a generation. The macOS `lockf` path is exercised; Linux's
-`flock` branch has not been run on Linux.
+The deep source audit of `607352e` plus the existing version bump completed
+30 coverage units: zero confirmed vulnerabilities, three conditional leads,
+and five blocked assurance units. The external report and evidence are under
+`/Users/josh/security-audit-skill/unhook-linkedin/run-1/`. This is a source-only
+audit, not a clean runtime, dependency-integrity, malware or hosted-CI attestation.
+No earlier compatible coverage ledger existed. The original audit snapshot
+remains separate from the subsequent hardening changes.
 
-A real frozen install, a second offline reinstall over that installation, and
-type-checking pass in a disposable copy with a separate package store. The
-working checkout's dependencies are untouched. The fixes are committed locally
-and await owner approval to push. Next: push the approved commits and inspect
-the Pages run; perform the manual LinkedIn checks above before a store release.
+Approved hardening removes the icon generator's predictable mask paths by
+passing its PNG Buffers directly to Potrace. The selected temporary directory
+was private to the current user; the cross-user overwrite hypothesis was not
+reproduced. Development hardening restores WebSocket token checks, carries the
+listening server's credential into WXT's two reload clients, and disables HTTP
+editor launching. Cross-origin browser reachability and actual editor disruption
+were not demonstrated by the audit. These are preventive fixes, not three
+confirmed exploits.
+
+The Pages workflow directly pins its upload action, replacing the composite
+wrapper whose nested upload used a mutable tag. It retains the `github-pages`
+artifact name, `artifact.tar` layout and one-day retention, disables checkout
+credential persistence, and bounds the job to ten minutes. Its portable Python
+archive step dereferences symbolic and hard links, tested with both link types.
 The Pages job publishes the privacy site and does not run the extension tests.
-The existing moderate icon-tooling advisory remains the separate dependency
-follow-up described above. No installed extension or store listing is updated
-by these local commits.
+
+Verification after the audit passes 97 tests, TypeScript, Chrome MV3 and Firefox
+MV2 production builds, and actionlint. The new tests exercise actual loopback
+HTTP/WebSocket endpoints, both WXT reload clients' generated credentials, and
+credential rotation on restart for both targets. Browser launching is disabled;
+editor requests use a harmless command even if the guard regresses. All seven
+icon/logo outputs are byte-identical to the former generator in disposable
+copies. Six negative controls fail as expected when temporary paths, mutable
+upload delegation, retained archive links, token bypass, tokenless reload
+clients, or editor access are restored.
+
+The owner authorized normal-sandbox local verification after the source-only
+audit. Loopback binding required a separately approved sandbox exception; no
+browser or external-service probe ran. This verification does not establish
+cross-origin delivery by a real browser or exploit the original hypotheses.
+
+Remaining assurance gaps include installed dependency byte integrity and
+compromise checks, the exact hosted action bundles/runtimes, and live extension
+behavior. The installed dependency tree also contains iCloud conflict metadata;
+it has not been reinstalled or modified during this audit. The moderate phin
+advisory remains in icon tooling. No application dependency version, store upload
+or installed extension change is part of this work. The pre-existing uncommitted
+package version change is excluded from these hardening commits. The owner has
+authorized pushing the verified hardening; the existing Pages workflow runs on
+that push. Verify that run's exact commit before treating it as deployed.
+Next bounded dependency task: replace the icon tracer with verified output
+parity to remove the remaining phin advisory; do not force an incompatible
+transitive override. No product/privacy documentation change is needed because
+shipped behavior and permissions are unchanged. No new release is required for
+these tooling changes alone.
