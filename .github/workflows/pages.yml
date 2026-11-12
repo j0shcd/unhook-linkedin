@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   deploy:
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -23,14 +24,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
+      # Archive directly: upload-pages-artifact v3 delegates to a
+      # mutable upload-artifact@v4 tag, despite its own immutable outer pin.
+      - name: Archive Pages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import tarfile
+
+          def include(entry):
+              return None if {'.git', '.github'}.intersection(entry.name.split('/')) else entry
+
+          with tarfile.open(os.path.join(os.environ['RUNNER_TEMP'], 'artifact.tar'),
+                            'w', dereference=True) as archive:
+              archive.add('docs', arcname='.', filter=include)
+          PY
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          path: docs
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          archive: true
+          retention-days: 1
+          if-no-files-found: error
 
       - name: Deploy
         id: deployment
