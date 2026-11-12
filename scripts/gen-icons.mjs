@@ -8,11 +8,10 @@
 // Run with: node scripts/gen-icons.mjs
 
 import { inflateSync, deflateSync } from 'node:zlib';
-import { writeFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { tmpdir } from 'node:os';
-import potrace from 'potrace';
+import { tracePath } from './trace-mask.mjs';
 import { Resvg } from '@resvg/resvg-js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -173,27 +172,6 @@ const isAccent = (r, g, b) => {
   const l = luma(r, g, b);
   return l >= 55 && l <= 115;
 };
-
-// --- Trace a mask PNG to a single path's `d` attribute ----------------------
-function tracePath(pngBuffer) {
-  const tmp = join(tmpdir(), `unhook-mask-${pngBuffer.length}.png`);
-  writeFileSync(tmp, pngBuffer);
-  return new Promise((resolve, reject) => {
-    const tracer = new potrace.Potrace({
-      threshold: 128,
-      turdSize: 8, // drop specks from anti-aliasing
-      optTolerance: 0.4,
-      turnPolicy: potrace.Potrace.TURNPOLICY_MINORITY,
-    });
-    tracer.loadImage(tmp, (err) => {
-      rmSync(tmp, { force: true });
-      if (err) return reject(err);
-      const svg = tracer.getSVG();
-      const d = [...svg.matchAll(/ d="([^"]+)"/g)].map((m) => m[1]).join(' ');
-      resolve(d);
-    });
-  });
-}
 
 // --- Compose SVGs -----------------------------------------------------------
 // Fit the artwork's content bbox into a padded 100x100 logical canvas.
